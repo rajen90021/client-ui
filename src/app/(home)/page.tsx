@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 // import ProductList from './components/product-list';
 import { Suspense } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default async function Home({ searchParams }: { searchParams: { restaurantId: string } }) {
     return (
@@ -23,6 +24,24 @@ export default async function Home({ searchParams }: { searchParams: { restauran
                     <div>
                         <Image alt="pizza-main" src={'/pizza-main.png'} width={400} height={400} />
                     </div>
+                </div>
+            </section>
+            <section>
+                <div className="container py-10">
+
+                    <Tabs defaultValue="pizza" className="w-[400px]">
+                        <TabsList>
+                            <TabsTrigger value="pizza" className="text-lg">Pizza</TabsTrigger>
+                            <TabsTrigger value="burger" className="text-lg">Burger</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="pizza">
+                            <p>For additional security, confirm your password. Current password cannot be recovered.</p>
+                        </TabsContent>
+                        <TabsContent value="burger">
+                            <p>Change your password at any time. Current password cannot be recovered.</p>
+                        </TabsContent>
+                    </Tabs>
+                    
                 </div>
             </section>
          
