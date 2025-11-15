@@ -3,8 +3,12 @@ import { Button } from '@/components/ui/button';
 // import ProductList from './components/product-list';
 import { Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ProductList from './components/product-list';
 
 export default async function Home({ searchParams }: { searchParams: { restaurantId: string } }) {
+    const params= await searchParams;
+    console.log('searchParams', params);
+    
     return (
         <>
             <section className="bg-white">
@@ -26,24 +30,10 @@ export default async function Home({ searchParams }: { searchParams: { restauran
                     </div>
                 </div>
             </section>
-            <section>
-                <div className="container py-10">
-
-                    <Tabs defaultValue="pizza" className="w-[400px]">
-                        <TabsList>
-                            <TabsTrigger value="pizza" className="text-lg">Pizza</TabsTrigger>
-                            <TabsTrigger value="burger" className="text-lg">Burger</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="pizza">
-                            <p>For additional security, confirm your password. Current password cannot be recovered.</p>
-                        </TabsContent>
-                        <TabsContent value="burger">
-                            <p>Change your password at any time. Current password cannot be recovered.</p>
-                        </TabsContent>
-                    </Tabs>
-                    
-                </div>
-            </section>
+            {/* todo: add skeleton component */}
+            <Suspense fallback={'Loading....'}>
+                <ProductList searchParams={params} />
+            </Suspense>
          
         </>
     );

@@ -1,12 +1,27 @@
-import React from 'react';
+
 import Link from 'next/link';
 import { Phone } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Tenant } from '@/lib/types';
+import TenantSelect from "./tenant-select";
+import CartCounterWrapper from "./cart-counter-wrapper";
 
 
 
 const Header = async () => {
-   
+
+    const tenantsResponse = await fetch(`${process.env.BACKEND_URL}/api/auth/tenants?perPage=100`, {
+        next: {
+            revalidate: 3600, // 1 hour
+        },
+    });
+    console.log('tenantsResponse', tenantsResponse);
+    if (!tenantsResponse.ok) {
+        throw new Error('Failed to fetch tenants');
+    }
+
+    const restaurants: { data: Tenant[] } = await tenantsResponse.json();
+    console.log('restaurants', restaurants);
 
     return (
         <header className="bg-white">
@@ -27,7 +42,7 @@ const Header = async () => {
                             />
                         </svg>
                     </Link>
-                    
+                      <TenantSelect restaurants={restaurants} />
                 </div>
                 <div className="flex items-center gap-x-4">
                     <ul className="flex items-center font-medium space-x-4">
@@ -42,7 +57,7 @@ const Header = async () => {
                             </Link>
                         </li>
                     </ul>
-                
+                      <CartCounterWrapper />
                     <div className="flex items-center ml-12">
                         <Phone />
                         <span>+91 9800 098 998</span>
