@@ -1,13 +1,11 @@
 'use server';
+
 import cookie from 'cookie';
 import { cookies } from 'next/headers';
 
 export default async function login(prevState: any, formdata: FormData) {
     const email = formdata.get('email');
     const password = formdata.get('password');
-    // todo: do request data validation
-
-    // call auth service
 
     try {
         const response = await fetch(`${process.env.BACKEND_URL}/api/auth/auth/login`, {
@@ -15,63 +13,69 @@ export default async function login(prevState: any, formdata: FormData) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                email,
-                password,
-            }),
+            body: JSON.stringify({ email, password }),
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            console.log('error', error);
-            return {
-                type: 'error',
-                message: error.errors[0].msg,
-            };
+            let text = await response.text();
+            try {
+                const parsed = JSON.parse(text);
+                return {
+                    type: 'error',
+                    message: parsed.errors?.[0]?.msg || parsed.message || 'Login failed',
+                };
+            } catch {
+                return {
+                    type: 'error',
+                    message: text,
+                };
+            }
         }
 
-        const c = response.headers.getSetCookie();
-        const accessToken = c.find((cookie) => cookie.includes('accessToken'));
-        const refreshToken = c.find((cookie) => cookie.includes('refreshToken'));
+        // ------ COOKIES FROM BACKEND ------
+        const setCookies = response.headers.getSetCookie();
 
-        if (!accessToken || !refreshToken) {
-            return {
-                type: 'error',
-                message: 'No cookies were found!',
-            };
+        const accessRaw = setCookies.find((c) => c.includes('accessToken'));
+        const refreshRaw = setCookies.find((c) => c.includes('refreshToken'));
+
+        if (!accessRaw || !refreshRaw) {
+            return { type: 'error', message: 'No cookies were returned' };
         }
 
-        const parsedAccessToken = cookie.parse(accessToken);
-        const parsedRefreshToken = cookie.parse(refreshToken);
+        const accessParsed = cookie.parse(accessRaw);
+        const refreshParsed = cookie.parse(refreshRaw);
 
-        console.log(parsedAccessToken, parsedRefreshToken);
+        if (!accessParsed.accessToken || !refreshParsed.refreshToken) {
+            return { type: 'error', message: 'Invalid cookie data' };
+        }
 
-        cookies().set({
-            name: 'accessToken',
-            value: parsedAccessToken.accessToken,
-            expires: new Date(parsedAccessToken.expires),
-            // todo: check auth service for httpOnly parameter
-            httpOnly: (parsedAccessToken.httpOnly as unknown as boolean) || true,
-            path: parsedAccessToken.Path,
-            domain: parsedAccessToken.Domain,
-            sameSite: parsedAccessToken.SameSite as 'strict',
+        // ------ IMPORTANT: AWAIT cookies() ------
+        const cookieStore = await cookies();
+        console.log("accessParsed", accessParsed);
+        console.log("refreshParsed", refreshParsed);
+
+        cookieStore.set('accessToken', accessParsed.accessToken, {
+            httpOnly: (accessParsed.httpOnly as unknown as boolean) || true,
+            path: accessParsed.Path || '/',
+          expires: accessParsed.Expires ? new Date(accessParsed.Expires) : new Date(),
+
+            sameSite: accessParsed.SameSite as 'strict',
+            domain: accessParsed.Domain,
         });
 
-        cookies().set({
-            name: 'refreshToken',
-            value: parsedRefreshToken.refreshToken,
-            expires: new Date(parsedRefreshToken.expires),
-            // todo: check auth service for httpOnly parameter
-            httpOnly: (parsedRefreshToken.httpOnly as unknown as boolean) || true,
-            path: parsedRefreshToken.Path,
-            domain: parsedRefreshToken.Domain,
-            sameSite: parsedRefreshToken.SameSite as 'strict',
+        cookieStore.set('refreshToken', refreshParsed.refreshToken, {
+            httpOnly:  (refreshParsed.httpOnly as unknown as boolean) || true,
+            path: refreshParsed.Path || '/',
+            expires: refreshParsed.Expires ? new Date(refreshParsed.Expires) : new Date(),
+            sameSite: refreshParsed.SameSite as 'strict',
+            domain: refreshParsed.Domain,
         });
 
         return {
             type: 'success',
             message: 'Login successful!',
         };
+
     } catch (err: any) {
         return {
             type: 'error',

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import * as jose from 'jose';
 
 const Refresher = ({ children }: { children: React.ReactNode }) => {
-    const timeoutId = useRef<NodeJS.Timeout>();
+    const timeoutId = useRef<NodeJS.Timeout | null>(null);
 
     const getAccessToken = async () => {
         const res = await fetch('/api/auth/accessToken');
@@ -72,7 +72,7 @@ const Refresher = ({ children }: { children: React.ReactNode }) => {
         startRefresh();
 
         return () => {
-            clearTimeout(timeoutId.current);
+            clearTimeout(timeoutId.current!);
         };
     }, [timeoutId, startRefresh]);
     return <div>{children}</div>;

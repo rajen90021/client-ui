@@ -1,40 +1,22 @@
-'use server';
-import cookie from 'cookie';
 import { cookies } from 'next/headers';
+import cookie from 'cookie';
 
-export default async function register(prevState: any, formdata: FormData) {
-    const firstName = formdata.get('firstName');
-    const lastName = formdata.get('lastName');
-    const email = formdata.get('email');
-    const password = formdata.get('password');
-    // todo: do request data validation
+export async function POST() {
+    const cookieStore = await cookies();
+    const response = await fetch(`${process.env.BACKEND_URL}/api/auth/auth/refresh`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${cookieStore.get('accessToken')?.value}`,
+            Cookie: `refreshToken=${cookieStore.get('refreshToken')?.value}`,
+        },
+    });
 
-    // call auth service
+    if (!response.ok) {
+        console.log('Refresh failed.');
+        return Response.json({ success: false });
+    }
 
-    try {
-        const response = await fetch(`${process.env.BACKEND_URL}/api/auth/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                firstName,
-                lastName,
-                email,
-                password,
-            }),
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            console.log('error', error);
-            return {
-                type: 'error',
-                message: error.errors[0].msg,
-            };
-        }
-
-      // ------ COOKIES FROM BACKEND ------
+    // ------ COOKIES FROM BACKEND ------
         const setCookies = response.headers.getSetCookie();
 
         const accessRaw = setCookies.find((c) => c.includes('accessToken'));
@@ -52,7 +34,6 @@ export default async function register(prevState: any, formdata: FormData) {
         }
 
         // ------ IMPORTANT: AWAIT cookies() ------
-        const cookieStore = await cookies();
         console.log("accessParsed", accessParsed);
         console.log("refreshParsed", refreshParsed);
 
@@ -74,14 +55,5 @@ export default async function register(prevState: any, formdata: FormData) {
         });
 
 
-        return {
-            type: 'success',
-            message: 'Registration successful!',
-        };
-    } catch (err: any) {
-        return {
-            type: 'error',
-            message: err.message,
-        };
-    }
+    return Response.json({ success: true });
 }

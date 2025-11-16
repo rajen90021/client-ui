@@ -4,7 +4,8 @@ import "./globals.css";
 import Header from "@/components/custom/header";
 import StoreProvider from "./StoreProvider";
 import { Toaster } from "@/components/ui/sonner"
- 
+import Refresher from "@/components/custom/refresher";
+import QueryProvider from "./QueryProvider"; 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,9 +37,13 @@ export default function RootLayout({
         <body
         className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} antialiased font-sans`}
       >
-        <Header />
-        <main>{children}</main>
-           <Toaster />
+                  <QueryProvider>
+                  <Refresher>
+                            <Header />
+                            <main>{children}</main>
+                            <Toaster />
+                        </Refresher>
+                        </QueryProvider>
       </body>
     </StoreProvider>
     </html>

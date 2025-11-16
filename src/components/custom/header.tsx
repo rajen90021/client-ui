@@ -5,23 +5,26 @@ import { Button } from '../ui/button';
 import { Tenant } from '@/lib/types';
 import TenantSelect from "./tenant-select";
 import CartCounterWrapper from "./cart-counter-wrapper";
+import { getSession } from "@/lib/session";
+import Logout from './logout';
 
 
 
 const Header = async () => {
-
+    
+  const session = await getSession();
     const tenantsResponse = await fetch(`${process.env.BACKEND_URL}/api/auth/tenants?perPage=100`, {
         next: {
             revalidate: 3600, // 1 hour
         },
     });
-    console.log('tenantsResponse', tenantsResponse);
+    // console.log('tenantsResponse', tenantsResponse);
     if (!tenantsResponse.ok) {
         throw new Error('Failed to fetch tenants');
     }
 
     const restaurants: { data: Tenant[] } = await tenantsResponse.json();
-    console.log('restaurants', restaurants);
+    // console.log('restaurants', restaurants);
 
     return (
         <header className="bg-white">
@@ -63,9 +66,13 @@ const Header = async () => {
                         <span>+91 9800 098 998</span>
                     </div>
                     
-                        <Button size={'sm'} asChild>
-                            <Link href="/login">Login</Link>
-                        </Button>
+                       {session ? (
+            <Logout />
+          ) : (
+            <Button size={"sm"} asChild>
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
                     
                 </div>
             </nav>
