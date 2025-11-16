@@ -1,4 +1,4 @@
-// import { CartItem } from '../store/features/cart/cartSlice';
+import { CartItem } from '../store/features/cart/cartSlice';
 
 export interface Tenant {
     id: string;
@@ -79,7 +79,7 @@ export type CouponCodeData = {
 };
 
 export type OrderData = {
-    // cart: CartItem[];
+    cart: CartItem[];
     couponCode: string;
     tenantId: string;
     customerId: string;
