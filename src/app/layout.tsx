@@ -1,24 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/custom/header";
 import StoreProvider from "./StoreProvider";
-import { Toaster } from "@/components/ui/sonner"
+
 import Refresher from "@/components/custom/refresher";
-import QueryProvider from "./QueryProvider"; 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import QueryProvider from "./QueryProvider";
+import { Toaster } from "react-hot-toast";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -32,20 +25,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-    <StoreProvider>
-        <body
-        className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} antialiased font-sans`}
-      >
-                  <QueryProvider>
-                  <Refresher>
-                            <Header />
-                            <main>{children}</main>
-                            <Toaster />
-                        </Refresher>
-                        </QueryProvider>
-      </body>
-    </StoreProvider>
+    <html lang="en" className={inter.variable}>
+      <StoreProvider>
+        <body className="antialiased font-sans">
+          <QueryProvider>
+            <Refresher>
+              <Header />
+              <main>{children}</main>
+              <Toaster />
+            </Refresher>
+          </QueryProvider>
+        </body>
+      </StoreProvider>
     </html>
   );
 }
